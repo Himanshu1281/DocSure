@@ -1,6 +1,8 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, View, TouchableOpacity, Platform } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { MaterialIcons } from '@expo/vector-icons';
+import { theme } from '../../../../core/theme';
 import { Doctor } from '../../domain/entities/Doctor';
 
 interface MapPanelProps {
@@ -86,6 +88,8 @@ const minimalMapStyle = [
 ];
 
 export const MapPanel: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, onMarkerPress, userLocation }) => {
+  const mapRef = useRef<MapView>(null);
+
   const defaultRegion = {
     latitude: userLocation.latitude || 28.4595,
     longitude: userLocation.longitude || 77.0266,
@@ -93,14 +97,29 @@ export const MapPanel: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, o
     longitudeDelta: 0.05,
   };
 
+  const centerOnUser = () => {
+    if (userLocation.latitude && userLocation.longitude) {
+      // Use tightly bounded deltas (0.005) to force a street-level "zoom in" 
+      // This is the most reliable cross-platform way to zoom in React Native Maps, 
+      // as iOS uses 'altitude' and Android uses 'zoom' natively in animateCamera.
+      mapRef.current?.animateToRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      }, 1000);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={styles.map}
         initialRegion={defaultRegion}
         customMapStyle={minimalMapStyle}
         showsUserLocation={!!(userLocation.latitude && userLocation.longitude)}
-        showsMyLocationButton={false}
+        showsMyLocationButton={false} 
       >
         {doctors.map(doctor => (
           <Marker
@@ -111,6 +130,12 @@ export const MapPanel: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, o
           />
         ))}
       </MapView>
+
+      {userLocation.latitude && userLocation.longitude ? (
+        <TouchableOpacity style={styles.locateButton} onPress={centerOnUser}>
+          <MaterialIcons name="my-location" size={24} color={theme.colors.textPrimary} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
@@ -123,5 +148,18 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  locateButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    backgroundColor: theme.colors.surface,
+    padding: 12,
+    borderRadius: theme.radius.round,
+    elevation: 4, // shadow for android
+    shadowColor: '#000', // shadow for ios
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
 });

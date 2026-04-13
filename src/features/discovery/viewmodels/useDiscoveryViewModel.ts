@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as Location from 'expo-location';
 import { Doctor } from '../domain/entities/Doctor';
 import { fetchNearbyDoctors } from '../data/datasources/MockDoctorDataSource';
 
@@ -52,11 +53,40 @@ export const useDiscoveryViewModel = create<DiscoveryViewModel>((set, get) => ({
   },
 
   loadLocation: async () => {
-    set((state) => ({ userLocation: { ...state.userLocation, isLoading: true } }));
+    set((state) => ({ userLocation: { ...state.userLocation, isLoading: true, error: null } }));
     
-    // Using simple mock loading here to avoid simulator permission hangs immediately on boot.
-    // In actual implementation, we use expo-location.
-    setTimeout(() => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        set({ userLocation: { latitude: null, longitude: null, city: 'Access Denied', isLoading: false, error: 'Permission denied' } });
+        get().loadDoctors(); // load anyway
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      
+      const reverseGeocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      const city = reverseGeocode[0]?.city || reverseGeocode[0]?.subregion || 'Your Location';
+
+      set({
+        userLocation: {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          city: city,
+          isLoading: false,
+          error: null,
+        }
+      });
+      get().loadDoctors();
+    } catch (error) {
+      console.warn("Location error, falling back to default:", error);
+      // Fallback
       set({
         userLocation: {
           latitude: 28.4595,
@@ -67,7 +97,7 @@ export const useDiscoveryViewModel = create<DiscoveryViewModel>((set, get) => ({
         }
       });
       get().loadDoctors();
-    }, 1500);
+    }
   },
 
   loadDoctors: async () => {

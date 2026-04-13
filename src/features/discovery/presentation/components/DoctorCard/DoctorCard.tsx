@@ -19,6 +19,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, isActive, onPres
       activeOpacity={0.9}
       onPress={onPress}
       style={[styles.card, isActive && styles.cardActive]}
+      testID="doctor-card-wrapper"
     >
       <DoctorHeader 
         name={doctor.name}

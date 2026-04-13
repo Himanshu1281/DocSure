@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../../../core/theme';
 
@@ -9,11 +9,27 @@ import { ContactListItem } from '../components/ContactListItem';
 import { VitalsGrid } from '../components/VitalsGrid';
 
 export const MedicalIdScreen = () => {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.pageTitle}>Medical ID</Text>
-        <Text style={styles.subtitle}>Updated 12 minutes ago</Text>
+        <Text style={styles.subtitle}>Updated recently</Text>
+      </View>
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+        }
+      >
 
         <MedicalQRCard />
 
@@ -45,9 +61,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
   },
+  header: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
   container: {
-    padding: theme.spacing.xl,
-    paddingBottom: 100,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
   },
   pageTitle: {
     ...theme.typography.h1,
@@ -55,7 +80,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...theme.typography.body,
-    marginBottom: theme.spacing.xl,
   },
   section: {
     marginBottom: theme.spacing.xl,

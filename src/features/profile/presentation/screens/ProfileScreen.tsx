@@ -29,10 +29,13 @@ export const ProfileScreen = () => {
           <SettingsMenuRow icon="description" title="Terms of Service" />
         </View>
 
+      </ScrollView>
+
+      <View style={styles.fixedBottom}>
         <TouchableOpacity style={styles.logoutBtn}>
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -44,7 +47,12 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: theme.spacing.xl,
-    paddingBottom: 100,
+    paddingBottom: theme.spacing.xxl,
+  },
+  fixedBottom: {
+    padding: theme.spacing.xl,
+    paddingTop: 0,
+    backgroundColor: theme.colors.surface,
   },
   section: {
     marginBottom: theme.spacing.xl,
@@ -54,7 +62,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   logoutBtn: {
-    marginTop: theme.spacing.xl,
+    marginTop: 0,
     paddingVertical: 16,
     alignItems: 'center',
     backgroundColor: '#FFF0F0',

@@ -10,11 +10,9 @@ interface DoctorHeaderProps {
   isVerified: boolean;
 }
 
+import { getInitials } from '../../../utils/getInitials';
+
 export const DoctorHeader: React.FC<DoctorHeaderProps> = ({ name, specialty, hospital, rating, isVerified }) => {
-  const getInitials = (docName: string) => {
-    const parts = docName.replace('Dr. ', '').split(' ');
-    return parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
-  };
 
   const specKey = Object.keys(theme.colors.specialtyBackgrounds).find(k => k === specialty) || 'General Physician';
   // @ts-ignore

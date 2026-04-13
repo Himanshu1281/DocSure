@@ -6,6 +6,7 @@ import { BookingsScreen } from '../../features/bookings/presentation/screens/Boo
 import { MedicalIdScreen } from '../../features/medicalId/presentation/screens/MedicalIdScreen';
 import { ProfileScreen } from '../../features/profile/presentation/screens/ProfileScreen';
 import { theme } from '../theme';
+import { withErrorBoundary } from '../utils/withErrorBoundary';
 
 export type MainTabParamList = {
   DiscoverTab: undefined;
@@ -15,6 +16,12 @@ export type MainTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
+
+// Wrap each screen in an ErrorBoundary to prevent specific feature crashes from taking down the entire app
+const SafeDiscoveryScreen = withErrorBoundary(DiscoveryScreen, 'Discovery Feature');
+const SafeBookingsScreen = withErrorBoundary(BookingsScreen, 'Bookings Feature');
+const SafeMedicalIdScreen = withErrorBoundary(MedicalIdScreen, 'Medical ID Feature');
+const SafeProfileScreen = withErrorBoundary(ProfileScreen, 'Profile Feature');
 
 export const MainTabNavigator = () => {
   return (
@@ -38,7 +45,7 @@ export const MainTabNavigator = () => {
     >
       <Tab.Screen 
         name="DiscoverTab" 
-        component={DiscoveryScreen} 
+        component={SafeDiscoveryScreen} 
         options={{ 
           title: 'Discover',
           tabBarIcon: ({ color, size }) => (
@@ -48,7 +55,7 @@ export const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="BookingsTab" 
-        component={BookingsScreen}
+        component={SafeBookingsScreen}
         options={{ 
           title: 'Bookings',
           tabBarIcon: ({ color, size }) => (
@@ -58,7 +65,7 @@ export const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="MedicalIdTab" 
-        component={MedicalIdScreen}
+        component={SafeMedicalIdScreen}
         options={{ 
           title: 'Medical ID',
           tabBarIcon: ({ color, size }) => (
@@ -68,7 +75,7 @@ export const MainTabNavigator = () => {
       />
       <Tab.Screen 
         name="ProfileTab" 
-        component={ProfileScreen}
+        component={SafeProfileScreen}
         options={{ 
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
