@@ -2,6 +2,15 @@
 
 DocSure is a premium, location-aware doctor discovery mobile application built with React Native and Expo. It allows users to find trusted clinical curators nearby, view their transparent consultation fees, and manage medical appointments seamlessly.
 
+## 📱 Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/discover.jpg" width="200" />
+  <img src="assets/screenshots/bookings.jpg" width="200" />
+  <img src="assets/screenshots/medical_id.jpg" width="200" />
+  <img src="assets/screenshots/profile.jpg" width="200" />
+</p>
+
 ## 🚀 Key Features
 
 - **📍 Live Discovery**: Automatically detects user location via GPS and plots nearby verified doctors on an interactive map.
