@@ -9,15 +9,16 @@ import { DoctorFooter } from './DoctorFooter';
 interface DoctorCardProps {
   doctor: Doctor;
   isActive: boolean;
-  onPress: () => void;
-  onBook: () => void;
+  onPress: (id: string) => void;
+  onBook: (id: string) => void;
 }
 
-export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, isActive, onPress, onBook }) => {
+// Memoized: list re-renders (e.g. selecting a card) only redraw cards whose props changed
+export const DoctorCard = React.memo<DoctorCardProps>(({ doctor, isActive, onPress, onBook }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={onPress}
+      onPress={() => onPress(doctor.id)}
       style={[styles.card, isActive && styles.cardActive]}
       testID="doctor-card-wrapper"
     >
@@ -32,6 +33,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, isActive, onPres
       <DoctorTags 
         languages={doctor.languages}
         waitTime={doctor.waitTime}
+        isOpenNow={doctor.isOpenNow}
       />
 
       <View style={styles.divider} />
@@ -40,11 +42,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, isActive, onPres
         consultationFee={doctor.consultationFee}
         distance={doctor.distance}
         city={doctor.city}
-        onBook={onBook}
+        onBook={() => onBook(doctor.id)}
       />
     </TouchableOpacity>
   );
-};
+});
+DoctorCard.displayName = 'DoctorCard';
 
 const styles = StyleSheet.create({
   card: {

@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Platform } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
@@ -9,7 +9,12 @@ interface MapPanelProps {
   doctors: Doctor[];
   selectedDoctorId: string | null;
   onMarkerPress: (id: string) => void;
+  onCalloutPress: (id: string) => void;
   userLocation: { latitude: number | null; longitude: number | null };
+  // Where results are searched around (GPS or a searched place)
+  center: { latitude: number; longitude: number };
+  // Label for a searched place; shown as its own pin. Omit when searching around GPS.
+  searchedPlaceLabel?: string;
 }
 
 // Minimal grayscale map style for "Clinical Curator" theme
@@ -87,15 +92,49 @@ const minimalMapStyle = [
   },
 ];
 
-export const MapPanel: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, onMarkerPress, userLocation }) => {
+const MapPanelComponent: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, onMarkerPress, onCalloutPress, userLocation, center, searchedPlaceLabel }) => {
   const mapRef = useRef<MapView>(null);
 
   const defaultRegion = {
-    latitude: userLocation.latitude || 28.4595,
-    longitude: userLocation.longitude || 77.0266,
+    latitude: center.latitude,
+    longitude: center.longitude,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   };
+
+  // initialRegion only applies on first render, so follow the search center as it changes
+  useEffect(() => {
+    mapRef.current?.animateToRegion({
+      latitude: center.latitude,
+      longitude: center.longitude,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    }, 600);
+  }, [center.latitude, center.longitude]);
+
+  // Fit the nearest results (plus the user) into view when results load
+  useEffect(() => {
+    if (doctors.length === 0) return;
+    const points = doctors.slice(0, 15).map(d => ({ latitude: d.latitude, longitude: d.longitude }));
+    points.push(center);
+    mapRef.current?.fitToCoordinates(points, {
+      edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
+      animated: true,
+    });
+  }, [doctors]);
+
+  // Selecting a card pans the map to its marker
+  useEffect(() => {
+    const selected = doctors.find(d => d.id === selectedDoctorId);
+    if (selected) {
+      mapRef.current?.animateToRegion({
+        latitude: selected.latitude,
+        longitude: selected.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
+    }
+  }, [selectedDoctorId]);
 
   const centerOnUser = () => {
     if (userLocation.latitude && userLocation.longitude) {
@@ -121,15 +160,29 @@ export const MapPanel: React.FC<MapPanelProps> = ({ doctors, selectedDoctorId, o
         showsUserLocation={!!(userLocation.latitude && userLocation.longitude)}
         showsMyLocationButton={false} 
       >
+        {searchedPlaceLabel && (
+          <Marker coordinate={center} title={searchedPlaceLabel} pinColor="#185FA5" />
+        )}
         {doctors.map(doctor => (
           <Marker
             key={doctor.id}
             coordinate={{ latitude: doctor.latitude, longitude: doctor.longitude }}
+            title={doctor.name}
+            description={`${doctor.specialty} · Tap to view profile`}
             onPress={() => onMarkerPress(doctor.id)}
+            onCalloutPress={() => onCalloutPress(doctor.id)}
             pinColor={selectedDoctorId === doctor.id ? '#0F6E56' : '#1D9E75'}
+            // Default pins never change their view; stop Android re-snapshotting each marker
+            tracksViewChanges={false}
           />
         ))}
       </MapView>
+
+      {doctors.some(d => d.source === 'osm') && (
+        <View style={styles.attribution} pointerEvents="none">
+          <Text style={styles.attributionText}>Clinic data © OpenStreetMap contributors</Text>
+        </View>
+      )}
 
       {userLocation.latitude && userLocation.longitude ? (
         <TouchableOpacity style={styles.locateButton} onPress={centerOnUser}>
@@ -149,6 +202,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  attribution: {
+    position: 'absolute',
+    left: 8,
+    bottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  attributionText: {
+    fontSize: 10,
+    color: theme.colors.textSecondary,
+  },
   locateButton: {
     position: 'absolute',
     right: 16,
@@ -163,3 +229,5 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
 });
+
+export const MapPanel = React.memo(MapPanelComponent);

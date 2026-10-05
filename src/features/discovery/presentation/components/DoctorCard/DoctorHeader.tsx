@@ -36,9 +36,11 @@ export const DoctorHeader: React.FC<DoctorHeaderProps> = ({ name, specialty, hos
         </View>
         <Text style={styles.specialty}>{specialty} · {hospital}</Text>
       </View>
-      <View style={styles.ratingBadge}>
-        <Text style={styles.ratingText}>★ {rating}</Text>
-      </View>
+      {rating > 0 && (
+        <View style={styles.ratingBadge}>
+          <Text style={styles.ratingText}>★ {rating}</Text>
+        </View>
+      )}
     </View>
   );
 };

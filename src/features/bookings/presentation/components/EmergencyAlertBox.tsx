@@ -1,17 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { confirmEmergencyCall, EMERGENCY_NUMBER } from '../../../../core/utils/linking';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
 
 export const EmergencyAlertBox = () => {
   return (
-    <View style={styles.emergencyBox}>
+    <TouchableOpacity style={styles.emergencyBox} onPress={confirmEmergencyCall} activeOpacity={0.8}>
       <MaterialIcons name="warning" size={24} color={theme.colors.danger} />
       <View style={styles.emergencyTextWrap}>
         <Text style={styles.emergencyTitle}>Need immediate care?</Text>
-        <Text style={styles.emergencyDesc}>Our clinical curators are available for emergency virtual consultations 24/7.</Text>
+        <Text style={styles.emergencyDesc}>Tap to call emergency services ({EMERGENCY_NUMBER}).</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

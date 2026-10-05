@@ -3,9 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../../../../core/theme';
 
 interface DoctorStatsGridProps {
-  waitTime: string;
+  waitTime: string | null;
   distance: number;
-  fee: number;
+  fee: number | null;
 }
 
 export const DoctorStatsGrid: React.FC<DoctorStatsGridProps> = ({ waitTime, distance, fee }) => {
@@ -13,7 +13,7 @@ export const DoctorStatsGrid: React.FC<DoctorStatsGridProps> = ({ waitTime, dist
     <View style={styles.statsRow}>
       <View style={styles.statBox}>
         <Text style={styles.statLabel}>Wait Time</Text>
-        <Text style={styles.statValue}>{waitTime}</Text>
+        <Text style={styles.statValue}>{waitTime ?? '—'}</Text>
       </View>
       <View style={styles.statBox}>
         <Text style={styles.statLabel}>Distance</Text>
@@ -21,7 +21,7 @@ export const DoctorStatsGrid: React.FC<DoctorStatsGridProps> = ({ waitTime, dist
       </View>
       <View style={styles.statBox}>
         <Text style={styles.statLabel}>Consult Fee</Text>
-        <Text style={styles.statValue}>₹{fee}</Text>
+        <Text style={styles.statValue}>{fee != null ? `₹${fee}` : '—'}</Text>
       </View>
     </View>
   );

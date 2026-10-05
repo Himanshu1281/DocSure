@@ -1,14 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { confirmEmergencyCall } from '../../../../../core/utils/linking';
 import { theme } from '../../../../../core/theme';
 import { LocationPill } from './LocationPill';
 
 interface NavbarProps {
   city: string | null;
   isLoading: boolean;
+  isSearchedPlace: boolean;
+  onPressLocation: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ city, isLoading }) => {
+export const Navbar: React.FC<NavbarProps> = ({ city, isLoading, isSearchedPlace, onPressLocation }) => {
   return (
     <View style={styles.navbar}>
       <View style={styles.logoContainer}>
@@ -18,8 +21,10 @@ export const Navbar: React.FC<NavbarProps> = ({ city, isLoading }) => {
         <Text style={styles.appName}>DocSure</Text>
       </View>
       <View style={styles.rightContainer}>
-        <LocationPill city={city} isLoading={isLoading} />
-        <Text style={styles.emergencyText}>Emergency?</Text>
+        <LocationPill city={city} isLoading={isLoading} isSearchedPlace={isSearchedPlace} onPress={onPressLocation} />
+        <TouchableOpacity onPress={confirmEmergencyCall} accessibilityRole="button">
+          <Text style={styles.emergencyText}>Emergency?</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

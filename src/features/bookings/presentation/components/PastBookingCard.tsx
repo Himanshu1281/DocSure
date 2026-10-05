@@ -6,16 +6,17 @@ interface PastBookingCardProps {
   doctorName: string;
   specialty: string;
   date: string;
+  isCancelled?: boolean;
 }
 
-export const PastBookingCard: React.FC<PastBookingCardProps> = ({ doctorName, specialty, date }) => {
+export const PastBookingCard: React.FC<PastBookingCardProps> = ({ doctorName, specialty, date, isCancelled }) => {
   return (
     <View style={styles.pastCard}>
       <View>
         <Text style={styles.doctorName}>{doctorName}</Text>
         <Text style={styles.specialty}>{specialty}</Text>
       </View>
-      <Text style={styles.pastDate}>{date}</Text>
+      <Text style={styles.pastDate}>{isCancelled ? `Cancelled · ${date}` : date}</Text>
     </View>
   );
 };

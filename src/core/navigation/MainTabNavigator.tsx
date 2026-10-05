@@ -28,6 +28,9 @@ export const MainTabNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        // Pause hidden tabs (map, lists) instead of re-rendering them in the background
+        freezeOnBlur: true,
+        lazy: true,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textHint,
         tabBarStyle: {

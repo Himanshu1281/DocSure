@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, FlatList, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../../core/navigation/RootNavigator';
-import { useDiscoveryViewModel } from '../../viewmodels/useDiscoveryViewModel';
+import { useDiscoveryViewModel, applyFilters, getSearchCenter } from '../../viewmodels/useDiscoveryViewModel';
 import { Navbar } from '../components/Navbar';
 import { FilterBar } from '../components/FilterBar';
 import { MapPanel } from '../components/MapPanel';
 import { DoctorCard } from '../components/DoctorCard';
+import { Doctor } from '../../domain/entities/Doctor';
 import { theme } from '../../../../core/theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -19,20 +21,94 @@ export const DiscoveryScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   
   const { 
-    doctors, 
-    isLoadingDoctors, 
+    doctors: allDoctors,
+    filters,
+    updateFilters,
+    isLoadingDoctors,
+    doctorsError,
+    loadDoctors,
     userLocation, 
+    searchLocation,
     loadLocation, 
     selectedDoctorId, 
     setSelectedDoctor 
-  } = useDiscoveryViewModel();
+  } = useDiscoveryViewModel(useShallow(state => ({
+    doctors: state.doctors,
+    filters: state.filters,
+    updateFilters: state.updateFilters,
+    isLoadingDoctors: state.isLoadingDoctors,
+    doctorsError: state.doctorsError,
+    loadDoctors: state.loadDoctors,
+    userLocation: state.userLocation,
+    searchLocation: state.searchLocation,
+    loadLocation: state.loadLocation,
+    selectedDoctorId: state.selectedDoctorId,
+    setSelectedDoctor: state.setSelectedDoctor,
+  })));
+
+  const doctors = useMemo(() => applyFilters(allDoctors, filters), [allDoctors, filters]);
+
+  // Stable object so memoized children don't re-render on unrelated store updates
+  const center = useMemo(
+    () => getSearchCenter({ searchLocation, userLocation }),
+    [searchLocation, userLocation]
+  );
 
   useEffect(() => {
     loadLocation();
   }, []);
 
-  const handleBook = (doctorId: string) => {
+  const handleBook = useCallback((doctorId: string) => {
     navigation.navigate('DoctorDetail', { id: doctorId });
+  }, [navigation]);
+
+  const renderDoctor = useCallback(({ item }: { item: Doctor }) => (
+    <DoctorCard
+      doctor={item}
+      isActive={selectedDoctorId === item.id}
+      onPress={setSelectedDoctor}
+      onBook={handleBook}
+    />
+  ), [selectedDoctorId, setSelectedDoctor, handleBook]);
+
+
+  const renderListStatus = () => {
+    if (isLoadingDoctors) {
+      return (
+        <View style={styles.status}>
+          <ActivityIndicator color={theme.colors.primary} />
+          <Text style={styles.statusText}>Finding doctors near you…</Text>
+        </View>
+      );
+    }
+    if (doctorsError) {
+      return (
+        <View style={styles.status}>
+          <Text style={styles.statusText}>{doctorsError}</Text>
+          <TouchableOpacity onPress={loadDoctors}>
+            <Text style={styles.retryText}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.status}>
+        <Text style={styles.statusText}>{allDoctors.length > 0 ? 'No doctors match your filters.' : `No doctors found within ${filters.radiusKm} km.`}</Text>
+      </View>
+    );
+  };
+
+  const listProps = {
+    data: doctors,
+    keyExtractor: (item: Doctor) => item.id,
+    contentContainerStyle: styles.listContent,
+    ListEmptyComponent: renderListStatus,
+    renderItem: renderDoctor,
+    extraData: selectedDoctorId,
+    initialNumToRender: 6,
+    maxToRenderPerBatch: 6,
+    windowSize: 5,
+    removeClippedSubviews: true,
   };
 
   const renderContent = () => {
@@ -45,22 +121,13 @@ export const DiscoveryScreen = () => {
               doctors={doctors}
               selectedDoctorId={selectedDoctorId}
               onMarkerPress={setSelectedDoctor}
+              onCalloutPress={handleBook}
               userLocation={userLocation}
+              center={center}
+              searchedPlaceLabel={searchLocation?.label}
             />
           </View>
-          <FlatList
-            data={doctors}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <DoctorCard 
-                doctor={item}
-                isActive={selectedDoctorId === item.id}
-                onPress={() => setSelectedDoctor(item.id)}
-                onBook={() => handleBook(item.id)}
-              />
-            )}
-          />
+          <FlatList {...listProps} />
         </View>
       );
     }
@@ -69,26 +136,17 @@ export const DiscoveryScreen = () => {
     return (
       <View style={styles.desktopContainer}>
         <View style={styles.listPanelDesktop}>
-          <FlatList
-            data={doctors}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <DoctorCard 
-                doctor={item}
-                isActive={selectedDoctorId === item.id}
-                onPress={() => setSelectedDoctor(item.id)}
-                onBook={() => handleBook(item.id)}
-              />
-            )}
-          />
+          <FlatList {...listProps} />
         </View>
         <View style={styles.mapPanelDesktop}>
           <MapPanel 
             doctors={doctors}
             selectedDoctorId={selectedDoctorId}
             onMarkerPress={setSelectedDoctor}
+            onCalloutPress={handleBook}
             userLocation={userLocation}
+            center={center}
+            searchedPlaceLabel={searchLocation?.label}
           />
         </View>
       </View>
@@ -97,8 +155,21 @@ export const DiscoveryScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <Navbar city={userLocation.city} isLoading={userLocation.isLoading} />
-      <FilterBar onOpenFilters={() => navigation.navigate('FilterSheet')} resultCount={doctors.length} />
+      <Navbar
+        city={searchLocation ? searchLocation.label : userLocation.city}
+        isLoading={userLocation.isLoading}
+        isSearchedPlace={!!searchLocation}
+        onPressLocation={() => navigation.navigate('LocationSearch')}
+      />
+      <FilterBar
+        onOpenFilters={() => navigation.navigate('FilterSheet')}
+        resultCount={doctors.length}
+        specialty={filters.specialty}
+        radiusKm={filters.radiusKm}
+        openNow={filters.openNow}
+        showOpenNow={allDoctors.some(d => d.isOpenNow != null)}
+        onToggleOpenNow={() => updateFilters({ openNow: !filters.openNow })}
+      />
       {renderContent()}
     </SafeAreaView>
   );
@@ -117,6 +188,19 @@ const styles = StyleSheet.create({
     width: '100%',
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.border,
+  },
+  status: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  statusText: {
+    color: theme.colors.textSecondary,
+    fontSize: 14,
+  },
+  retryText: {
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   listContent: {
     padding: theme.spacing.lg,

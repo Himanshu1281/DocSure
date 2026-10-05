@@ -8,11 +8,14 @@ interface UpcomingBookingCardProps {
   specialty: string;
   dateTime: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
+  onPress?: () => void;
+  onReschedule: () => void;
+  onCancel: () => void;
 }
 
-export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({ doctorName, specialty, dateTime, iconName }) => {
+export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({ doctorName, specialty, dateTime, iconName, onPress, onReschedule, onCancel }) => {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={onPress} disabled={!onPress}>
       <View style={styles.cardHeader}>
         <View>
           <Text style={styles.doctorName}>{doctorName}</Text>
@@ -24,11 +27,16 @@ export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({ doctor
       </View>
       <View style={styles.cardFooter}>
         <Text style={styles.dateTime}>{dateTime}</Text>
-        <TouchableOpacity style={styles.actionBtn}>
-          <Text style={styles.actionBtnText}>Reschedule</Text>
-        </TouchableOpacity>
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.actionBtn} onPress={onCancel}>
+            <Text style={[styles.actionBtnText, styles.cancelText]}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={onReschedule}>
+            <Text style={styles.actionBtnText}>Reschedule</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -75,6 +83,13 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     fontWeight: '500',
     color: theme.colors.textPrimary,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  cancelText: {
+    color: theme.colors.danger,
   },
   actionBtn: {
     paddingHorizontal: 12,

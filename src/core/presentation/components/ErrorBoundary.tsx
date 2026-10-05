@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </View>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
-            We're sorry, an unexpected error occurred{this.props.featureName ? ` within the ${this.props.featureName}` : ''}. Our team has been notified.
+            We're sorry, an unexpected error occurred{this.props.featureName ? ` within the ${this.props.featureName}` : ''}. Please try again.
           </Text>
           
           <TouchableOpacity style={styles.button} onPress={this.handleReset}>

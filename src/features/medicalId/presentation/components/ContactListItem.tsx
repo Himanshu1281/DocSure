@@ -1,22 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
 
 interface ContactListItemProps {
   name: string;
   relation: string;
+  onCall?: () => void;
 }
 
-export const ContactListItem: React.FC<ContactListItemProps> = ({ name, relation }) => {
+export const ContactListItem: React.FC<ContactListItemProps> = ({ name, relation, onCall }) => {
   return (
-    <View style={styles.contactRow}>
+    <TouchableOpacity style={styles.contactRow} onPress={onCall} disabled={!onCall}>
       <View>
         <Text style={styles.contactName}>{name}</Text>
         <Text style={styles.contactRelation}>{relation}</Text>
       </View>
       <MaterialIcons name="phone" size={24} color={theme.colors.primary} />
-    </View>
+    </TouchableOpacity>
   );
 };
 

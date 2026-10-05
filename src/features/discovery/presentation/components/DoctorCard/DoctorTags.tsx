@@ -4,10 +4,11 @@ import { theme } from '../../../../../core/theme';
 
 interface DoctorTagsProps {
   languages: string[];
-  waitTime: string;
+  waitTime: string | null;
+  isOpenNow: boolean | null;
 }
 
-export const DoctorTags: React.FC<DoctorTagsProps> = ({ languages, waitTime }) => {
+export const DoctorTags: React.FC<DoctorTagsProps> = ({ languages, waitTime, isOpenNow }) => {
   return (
     <View style={styles.tagsRow}>
       {languages.map(lang => (
@@ -15,9 +16,16 @@ export const DoctorTags: React.FC<DoctorTagsProps> = ({ languages, waitTime }) =
           <Text style={styles.tagText}>{lang}</Text>
         </View>
       ))}
-      <View style={styles.tag}>
-        <Text style={styles.tagText}>Wait: {waitTime}</Text>
-      </View>
+      {isOpenNow != null && (
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>{isOpenNow ? 'Open now' : 'Closed'}</Text>
+        </View>
+      )}
+      {waitTime && (
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>Wait: {waitTime}</Text>
+        </View>
+      )}
     </View>
   );
 };

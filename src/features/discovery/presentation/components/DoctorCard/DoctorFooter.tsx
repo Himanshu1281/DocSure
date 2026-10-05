@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { theme } from '../../../../../core/theme';
 
 interface DoctorFooterProps {
-  consultationFee: number;
+  consultationFee: number | null;
   distance: number;
   city: string;
   onBook: () => void;
@@ -15,7 +15,7 @@ export const DoctorFooter: React.FC<DoctorFooterProps> = ({ consultationFee, dis
       <View style={styles.footerRow}>
         <View>
           <Text style={styles.feeLabel}>Consultation Fee</Text>
-          <Text style={styles.feeAmount}>₹{consultationFee}</Text>
+          <Text style={styles.feeAmount}>{consultationFee != null ? `₹${consultationFee}` : 'Not listed'}</Text>
         </View>
         <TouchableOpacity style={styles.bookButton} onPress={onBook}>
           <Text style={styles.bookButtonText}>Book Now</Text>

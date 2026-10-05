@@ -3,14 +3,26 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
 
-export const DoctorActionFooter = () => {
+interface DoctorActionFooterProps {
+  onDirections: () => void;
+  onCall?: () => void;
+  onBook: () => void;
+}
+
+export const DoctorActionFooter: React.FC<DoctorActionFooterProps> = ({ onDirections, onCall, onBook }) => {
   return (
     <View style={styles.footer}>
-      <TouchableOpacity style={styles.secondaryBtn}>
+      <TouchableOpacity style={styles.secondaryBtn} onPress={onDirections}>
         <MaterialIcons name="directions" size={20} color={theme.colors.primary} />
         <Text style={styles.secondaryBtnText}>Directions</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.primaryBtn}>
+      {onCall && (
+        <TouchableOpacity style={styles.secondaryBtn} onPress={onCall}>
+          <MaterialIcons name="call" size={20} color={theme.colors.primary} />
+          <Text style={styles.secondaryBtnText}>Call</Text>
+        </TouchableOpacity>
+      )}
+      <TouchableOpacity style={styles.primaryBtn} onPress={onBook}>
         <Text style={styles.primaryBtnText}>Book Consult</Text>
       </TouchableOpacity>
     </View>

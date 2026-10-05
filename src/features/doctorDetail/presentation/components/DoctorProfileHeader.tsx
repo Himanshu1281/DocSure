@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
+import { getInitials } from '../../../discovery/utils/getInitials';
 
 interface DoctorProfileHeaderProps {
   name: string;
@@ -15,14 +16,18 @@ export const DoctorProfileHeader: React.FC<DoctorProfileHeaderProps> = ({ name, 
   return (
     <View style={styles.profileBox}>
       <View style={styles.avatarLarge}>
-        <Text style={styles.avatarText}>{name.charAt(4)}</Text>
+        <Text style={styles.avatarText}>{getInitials(name)}</Text>
       </View>
       <Text style={styles.doctorName}>{name}</Text>
       <Text style={styles.specialty}>{specialty} · {hospital}</Text>
       
       <View style={styles.ratingRow}>
-        <MaterialIcons name="star" size={16} color={theme.colors.primaryDark} />
-        <Text style={styles.ratingText}>{rating}</Text>
+        {rating > 0 && (
+          <>
+            <MaterialIcons name="star" size={16} color={theme.colors.primaryDark} />
+            <Text style={styles.ratingText}>{rating}</Text>
+          </>
+        )}
         {isVerified && (
           <View style={styles.verifiedBadge}>
             <MaterialIcons name="verified" size={12} color={theme.colors.primaryDark} />

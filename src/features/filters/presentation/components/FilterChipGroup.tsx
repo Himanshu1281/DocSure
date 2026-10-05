@@ -6,9 +6,10 @@ interface FilterChipGroupProps {
   title: string;
   items: string[];
   activeIndices: number[];
+  onToggle?: (index: number) => void;
 }
 
-export const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ title, items, activeIndices }) => {
+export const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ title, items, activeIndices, onToggle }) => {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -16,7 +17,7 @@ export const FilterChipGroup: React.FC<FilterChipGroupProps> = ({ title, items, 
         {items.map((item, i) => {
           const isActive = activeIndices.includes(i);
           return (
-            <TouchableOpacity key={item} style={[styles.chip, isActive && styles.chipActive]}>
+            <TouchableOpacity key={item} style={[styles.chip, isActive && styles.chipActive]} onPress={() => onToggle?.(i)}>
               <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{item}</Text>
             </TouchableOpacity>
           );

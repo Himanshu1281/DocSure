@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../../../core/theme';
+import { useDiscoveryViewModel, RADIUS_OPTIONS_KM, FilterState } from '../../../discovery/viewmodels/useDiscoveryViewModel';
 
 import { FilterChipGroup } from '../components/FilterChipGroup';
 import { FilterSwitchRow } from '../components/FilterSwitchRow';
@@ -12,6 +13,17 @@ export const FilterSheet = () => {
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(1000)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { doctors, filters, updateFilters, resetFilters } = useDiscoveryViewModel();
+  // Edits are a draft until "Apply Filters"
+  const [draft, setDraft] = useState<FilterState>(filters);
+
+  // Only offer specialties that exist in the current results
+  const specialties = useMemo(
+    () => Array.from(new Set(doctors.map(d => d.specialty))).sort(),
+    [doctors]
+  );
+  const hasOpeningHours = doctors.some(d => d.isOpenNow != null);
+  const radiusLabels = RADIUS_OPTIONS_KM.map(km => `${km} km`);
 
   useEffect(() => {
     Animated.parallel([
@@ -56,27 +68,34 @@ export const FilterSheet = () => {
           <View style={styles.container}>
             <Text style={styles.title}>Refine Search</Text>
             
-            <FilterChipGroup 
-              title="Specialty" 
-              items={['General Physician', 'Dermatologist', 'Orthopedic', 'Cardiologist']} 
-              activeIndices={[0]} 
+            <FilterChipGroup
+              title="Distance"
+              items={radiusLabels}
+              activeIndices={[RADIUS_OPTIONS_KM.indexOf(draft.radiusKm)]}
+              onToggle={i => setDraft(d => ({ ...d, radiusKm: RADIUS_OPTIONS_KM[i] }))}
             />
-
-            <FilterChipGroup 
-              title="Language" 
-              items={['English', 'Hindi', 'Marathi', 'Telugu']} 
-              activeIndices={[0, 1]} 
-            />
-            
-            <FilterSwitchRow 
-              title="Availability" 
-              label="Open Now" 
-              value={true} 
-            />
-
-            <FilterActionRow 
-              onClear={closeSheet} 
-              onApply={closeSheet} 
+            {specialties.length > 0 && (
+              <FilterChipGroup
+                title="Specialty"
+                items={specialties}
+                activeIndices={draft.specialty ? [specialties.indexOf(draft.specialty)] : []}
+                onToggle={i => setDraft(d => ({
+                  ...d,
+                  specialty: d.specialty === specialties[i] ? null : specialties[i],
+                }))}
+              />
+            )}
+            {hasOpeningHours && (
+              <FilterSwitchRow
+                title="Availability"
+                label="Open Now"
+                value={draft.openNow}
+                onValueChange={openNow => setDraft(d => ({ ...d, openNow }))}
+              />
+            )}
+            <FilterActionRow
+              onClear={() => { resetFilters(); closeSheet(); }}
+              onApply={() => { updateFilters(draft); closeSheet(); }}
             />
           </View>
         </SafeAreaView>
@@ -91,7 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   sheetContainerAnim: {

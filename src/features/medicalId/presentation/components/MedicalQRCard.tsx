@@ -3,12 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../../../../core/theme';
 
-export const MedicalQRCard = () => {
+export const MedicalQRCard: React.FC<{ dossierId: string }> = ({ dossierId }) => {
   return (
     <View style={styles.qrCard}>
       <MaterialIcons name="qr-code-2" size={120} color={theme.colors.primaryDark} />
       <Text style={styles.qrTitle}>Emergency Access QR</Text>
-      <Text style={styles.qrDesc}>Dossier ID: CC-7729-LX</Text>
+      <Text style={styles.qrDesc}>Dossier ID: {dossierId}</Text>
     </View>
   );
 };

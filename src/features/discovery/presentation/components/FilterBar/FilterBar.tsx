@@ -6,16 +6,24 @@ import { FilterPill } from './FilterPill';
 interface FilterBarProps {
   onOpenFilters: () => void;
   resultCount: number;
+  specialty: string | null;
+  radiusKm: number;
+  openNow: boolean;
+  showOpenNow: boolean;
+  onToggleOpenNow: () => void;
 }
 
-export const FilterBar: React.FC<FilterBarProps> = ({ onOpenFilters, resultCount }) => {
+export const FilterBar: React.FC<FilterBarProps> = ({
+  onOpenFilters, resultCount, specialty, radiusKm, openNow, showOpenNow, onToggleOpenNow,
+}) => {
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <FilterPill label="All Specialties ▾" onPress={onOpenFilters} />
-        <FilterPill label="All Languages ▾" onPress={onOpenFilters} />
-        <FilterPill label="Max: ₹2000 ▾" onPress={onOpenFilters} />
-        <FilterPill label="Open Now" isToggled={true} onPress={onOpenFilters} />
+        <FilterPill label={`${specialty ?? 'All Specialties'} ▾`} isToggled={!!specialty} onPress={onOpenFilters} />
+        <FilterPill label={`Within ${radiusKm} km ▾`} onPress={onOpenFilters} />
+        {showOpenNow && (
+          <FilterPill label="Open Now" isToggled={openNow} onPress={onToggleOpenNow} />
+        )}
 
         <View style={styles.countBadge}>
           <Text style={styles.countText}>{resultCount} results</Text>
