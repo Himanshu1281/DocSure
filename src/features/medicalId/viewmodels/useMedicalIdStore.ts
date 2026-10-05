@@ -30,6 +30,8 @@ interface MedicalIdStore extends MedicalIdData {
   updatedAt: string | null;
   save: (data: MedicalIdData) => void;
   clear: () => void;
+  // Apply the cloud copy without bumping updatedAt (used by sync)
+  applyRemote: (data: MedicalIdData & { dossierId: string; updatedAt: string }) => void;
 }
 
 export const newRowId = () => Math.random().toString(36).slice(2, 10);
@@ -55,6 +57,7 @@ export const useMedicalIdStore = create<MedicalIdStore>()(
       updatedAt: null,
       save: (data) => set({ ...data, updatedAt: new Date().toISOString() }),
       clear: () => set({ ...EMPTY, dossierId: newDossierId(), updatedAt: null }),
+      applyRemote: (data) => set(data),
     }),
     { name: STORAGE_KEYS.medicalId, storage: persistStorage }
   )

@@ -17,4 +17,6 @@ export interface Booking {
   startsAt: string; // ISO timestamp
   status: BookingStatus;
   createdAt: string;
+  // Last local or remote change; used to resolve sync conflicts (newest wins)
+  updatedAt: string;
 }

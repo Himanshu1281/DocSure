@@ -5,11 +5,11 @@ DocSure is a premium, location-aware doctor discovery mobile application built w
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/discover.jpg" width="160" />
-  <img src="assets/screenshots/doctor_detail.jpg" width="160" />
-  <img src="assets/screenshots/bookings.jpg" width="160" />
-  <img src="assets/screenshots/medical_id.jpg" width="160" />
-  <img src="assets/screenshots/profile.jpg" width="160" />
+  <img src="assets/screenshots/Discover.jpeg" width="160" />
+  <img src="assets/screenshots/Doctor.jpeg" width="160" />
+  <img src="assets/screenshots/Bookings.jpeg" width="160" />
+  <img src="assets/screenshots/Medical.jpeg" width="160" />
+  <img src="assets/screenshots/Profile.jpeg" width="160" />
 </p>
 
 ## 🚀 Key Features

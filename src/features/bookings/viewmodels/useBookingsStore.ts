@@ -9,7 +9,11 @@ interface BookingsStore {
   reschedule: (id: string, startsAt: Date) => void;
   cancel: (id: string) => void;
   clear: () => void;
+  // Replace all bookings with the merged local + cloud set (used by sync)
+  replaceAll: (bookings: Booking[]) => void;
 }
+
+const nowIso = () => new Date().toISOString();
 
 const newId = () => `bk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 
@@ -24,7 +28,8 @@ export const useBookingsStore = create<BookingsStore>()(
           doctor,
           startsAt: startsAt.toISOString(),
           status: 'requested',
-          createdAt: new Date().toISOString(),
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
         };
         set(state => ({ bookings: [...state.bookings, booking] }));
         return booking;
@@ -33,18 +38,29 @@ export const useBookingsStore = create<BookingsStore>()(
       reschedule: (id, startsAt) =>
         set(state => ({
           bookings: state.bookings.map(b =>
-            b.id === id ? { ...b, startsAt: startsAt.toISOString(), status: 'requested' } : b
+            b.id === id ? { ...b, startsAt: startsAt.toISOString(), status: 'requested', updatedAt: nowIso() } : b
           ),
         })),
 
       cancel: (id) =>
         set(state => ({
-          bookings: state.bookings.map(b => (b.id === id ? { ...b, status: 'cancelled' } : b)),
+          bookings: state.bookings.map(b => (b.id === id ? { ...b, status: 'cancelled', updatedAt: nowIso() } : b)),
         })),
 
       clear: () => set({ bookings: [] }),
+
+      replaceAll: (bookings) => set({ bookings }),
     }),
-    { name: STORAGE_KEYS.bookings, storage: persistStorage }
+    {
+      name: STORAGE_KEYS.bookings,
+      storage: persistStorage,
+      version: 1,
+      // v0 bookings had no updatedAt; treat their creation time as last change
+      migrate: (persisted: any) => ({
+        ...persisted,
+        bookings: (persisted?.bookings ?? []).map((b: Booking) => ({ ...b, updatedAt: b.updatedAt ?? b.createdAt })),
+      }),
+    }
   )
 );
 
